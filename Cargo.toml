@@ -1,0 +1,8 @@
+[package]
+name = "veascript"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde = "1.0.217"
+serenity = "0.12.4"
