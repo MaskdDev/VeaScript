@@ -1,4 +1,5 @@
 // Import parser modules
+pub mod boolean;
 pub mod decimal;
 pub mod embed;
 pub mod hexadecimal;
@@ -8,6 +9,7 @@ pub mod string;
 pub mod text;
 
 // Re-export parsers
+pub use boolean::parse_bool as boolean;
 pub use decimal::{int32, int64};
 pub use embed::parse_embed as embed;
 pub use hexadecimal::hexadecimal as hex;

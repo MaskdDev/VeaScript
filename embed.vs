@@ -12,4 +12,26 @@
         #icon_url: "https://footericonurl.png",
     }
     #timestamp: 13454321,
+    #fields {
+        #field {
+            #name: "Field name",
+            #value: "Field value",
+            #inline: true,
+        }
+        #field {
+            #name: "Field name",
+            #value: "Field value",
+            #inline: true,
+        }
+        #field {
+            #name: "Field name",
+            #value: "Field value",
+            #inline: true,
+        }
+        #field {
+            #name: "Field name",
+            #value: "Field value",
+            #inline: true,
+        }
+    }
 }

@@ -1,6 +1,8 @@
-use crate::enums::{EmbedAuthorComponent, EmbedComponent, EmbedFooterComponent};
+use crate::enums::{
+    EmbedAuthorComponent, EmbedComponent, EmbedFieldComponent, EmbedFooterComponent,
+};
 use crate::helpers::{hexadecimal, validation};
-use crate::structs::{StoredEmbed, StoredEmbedAuthor, StoredEmbedFooter};
+use crate::structs::{StoredEmbed, StoredEmbedAuthor, StoredEmbedField, StoredEmbedFooter};
 use chumsky::prelude::*;
 
 /// Build a stored embed struct using a vector of VeaScript embed components.
@@ -78,6 +80,21 @@ pub fn build_embed(components: Vec<EmbedComponent>) -> Result<StoredEmbed, Strin
                     // Set colour set flag
                     colour_set = true;
                 }
+            }
+            EmbedComponent::Fields(fields) => {
+                // Build embed fields
+                let mut fields = build_fields(fields)?;
+
+                // Check if field limit has been exceeded.
+                if embed.fields.len() + fields.len() > 25 {
+                    // Return too many fields error
+                    return Err(String::from(
+                        "An embed can only have a maximum of 25 fields.",
+                    ));
+                }
+
+                // Add new fields to embed
+                embed.fields.append(&mut fields);
             }
             EmbedComponent::Image(image_url) => {
                 // Check if the image url is valid.
@@ -280,4 +297,108 @@ pub fn build_footer(components: Vec<EmbedFooterComponent>) -> Result<StoredEmbed
 
     // Return embed footer
     Ok(footer)
+}
+
+// Build a vector of stored embed field structs using a vector of vectors of VeaScript embed field components.
+pub fn build_fields(
+    fields: Vec<Vec<EmbedFieldComponent>>,
+) -> Result<Vec<StoredEmbedField>, String> {
+    println!("{:?}", fields);
+
+    // Create built fields vector
+    let mut built_fields: Vec<StoredEmbedField> = Vec::new();
+
+    // Iterate over fields
+    for field_components in fields {
+        // Create field
+        let mut field = StoredEmbedField::new();
+
+        // Create name set, value set and inline set flags
+        let mut name_set = false;
+        let mut value_set = false;
+        let mut inline_set = false;
+
+        // Iterate over field components
+        for component in field_components {
+            match component {
+                EmbedFieldComponent::Name(name) => {
+                    // Get field name length
+                    let name_length = name.len();
+
+                    // Check if field name has already been set
+                    if name_set {
+                        // Return multiple field name error
+                        return Err(String::from(
+                            "You can only have one field name per embed field.",
+                        ));
+                    } else if name_length > 256 {
+                        // Return length error
+                        return Err(format!(
+                        "The length of one of your field names ({}) is above the maximum of 256 characters.",
+                        name_length
+                    ));
+                    } else {
+                        // Add name to embed field
+                        field = field.name(name);
+
+                        // Set name set flag
+                        name_set = true;
+                    }
+                }
+                EmbedFieldComponent::Value(value) => {
+                    // Get field value length
+                    let value_length = value.len();
+
+                    // Check if field value has already been set
+                    if value_set {
+                        // Return multiple field value error
+                        return Err(String::from(
+                            "You can only have one field value per embed field.",
+                        ));
+                    } else if value_length > 256 {
+                        // Return length error
+                        return Err(format!(
+                        "The length of one of your field values ({}) is above the maximum of 256 characters.",
+                        value_length
+                    ));
+                    } else {
+                        // Add value to embed field
+                        field = field.value(value);
+
+                        // Set value set flag
+                        value_set = true;
+                    }
+                }
+                EmbedFieldComponent::Inline(inline) => {
+                    // Check if field value has already been set
+                    if inline_set {
+                        // Return multiple field value error
+                        return Err(String::from(
+                            "You can only set inline once per embed field.",
+                        ));
+                    } else {
+                        // Add inline to embed field
+                        field = field.inline(inline);
+
+                        // Set inline set flag
+                        inline_set = true;
+                    }
+                }
+            }
+        }
+
+        // Check if embed field has name and value set
+        if field.name.is_empty() || field.value.is_empty() {
+            // Return not set field error
+            return Err(String::from(
+                "All of your embed fields must have both a name and a value.",
+            ));
+        }
+
+        // Add field to built fields
+        built_fields.push(field);
+    }
+
+    // Return embed fields
+    Ok(built_fields)
 }

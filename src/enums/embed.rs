@@ -5,6 +5,7 @@ pub enum EmbedComponent {
     Title(String),
     Description(String),
     Colour(i32),
+    Fields(Vec<Vec<EmbedFieldComponent>>),
     Image(String),
     Thumbnail(String),
     Url(String),

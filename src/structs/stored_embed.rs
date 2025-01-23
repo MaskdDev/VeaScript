@@ -301,3 +301,32 @@ pub struct StoredEmbedField {
     /// Whether or not the field is inline.
     pub inline: bool,
 }
+
+impl StoredEmbedField {
+    /// Create a new, blank embed field.
+    pub fn new() -> Self {
+        Self {
+            name: String::new(),
+            value: String::new(),
+            inline: false,
+        }
+    }
+
+    /// Set the embed field's name.
+    pub fn name(mut self, name: impl Into<String>) -> Self {
+        self.name = name.into();
+        self
+    }
+
+    /// Set the embed field's value.
+    pub fn value(mut self, value: impl Into<String>) -> Self {
+        self.value = value.into();
+        self
+    }
+
+    /// Set the embed field's inline setting.
+    pub fn inline(mut self, inline: bool) -> Self {
+        self.inline = inline;
+        self
+    }
+}

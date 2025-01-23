@@ -1,8 +1,11 @@
-use crate::enums::{EmbedAuthorComponent, EmbedComponent, EmbedFooterComponent, Expr};
+use crate::enums::{
+    EmbedAuthorComponent, EmbedComponent, EmbedFieldComponent, EmbedFooterComponent, Expr,
+};
 use crate::helpers::hexadecimal;
 use crate::parsers;
 use crate::structs::StoredEmbed;
 use chumsky::prelude::*;
+use serenity::all::EmbedField;
 
 /// Parse an embed into a VeaScript embed.
 pub fn parse_embed() -> impl Parser<char, Expr, Error = Simple<char>> {
@@ -33,7 +36,8 @@ pub fn parse_embed_component() -> impl Parser<char, EmbedComponent, Error = Simp
         .or(parse_embed_url())
         .or(parse_embed_author())
         .or(parse_embed_footer())
-        .or(parse_embed_timestamp());
+        .or(parse_embed_timestamp())
+        .or(parse_embed_fields());
 
     // Return embed component parser
     component_parser.padded()
@@ -201,4 +205,75 @@ pub fn parse_embed_footer_text() -> impl Parser<char, EmbedFooterComponent, Erro
 pub fn parse_embed_footer_icon_url() -> impl Parser<char, EmbedFooterComponent, Error = Simple<char>>
 {
     parse_footer_string_field("#icon_url:", EmbedFooterComponent::IconUrl)
+}
+
+/// Parse an embed's fields into a VeaScript embed component.
+pub fn parse_embed_fields() -> impl Parser<char, EmbedComponent, Error = Simple<char>> {
+    // Return embed parser
+    parse_embed_fields_raw().map(EmbedComponent::Fields)
+}
+
+/// Parse an embed's fields into a vector of vectors of embed components.
+pub fn parse_embed_fields_raw(
+) -> impl Parser<char, Vec<Vec<EmbedFieldComponent>>, Error = Simple<char>> {
+    // Create field parser
+    let field_parser = parse_embed_field()
+        .repeated()
+        .delimited_by(just("#fields {"), just("}"))
+        .collect();
+
+    // Return footer parser
+    field_parser.padded()
+}
+
+/// Parse an embed field into a vector of VeaScript embed field components.
+pub fn parse_embed_field() -> impl Parser<char, Vec<EmbedFieldComponent>, Error = Simple<char>> {
+    // Create field parser
+    let footer_parser = parse_embed_field_component()
+        .repeated()
+        .delimited_by(just("#field {"), just("}"))
+        .collect();
+
+    // Return footer parser
+    footer_parser.padded()
+}
+
+/// Parse an embed field component.
+pub fn parse_embed_field_component() -> impl Parser<char, EmbedFieldComponent, Error = Simple<char>>
+{
+    // Create field component parser
+    let component_parser = parse_embed_field_name()
+        .or(parse_embed_field_value())
+        .or(parse_embed_field_inline());
+
+    // Return field component parser
+    component_parser.padded()
+}
+
+/// Parse a string field for an embed field.
+pub fn parse_field_string_field(
+    tag: &'static str,
+    component: impl Fn(String) -> EmbedFieldComponent,
+) -> impl Parser<char, EmbedFieldComponent, Error = Simple<char>> {
+    // Return title parser
+    parsers::string()
+        .delimited_by(just(tag), just(','))
+        .map(component)
+}
+
+/// Parse an embed field's name.
+pub fn parse_embed_field_name() -> impl Parser<char, EmbedFieldComponent, Error = Simple<char>> {
+    parse_field_string_field("#name:", EmbedFieldComponent::Name)
+}
+
+/// Parse an embed field's value.
+pub fn parse_embed_field_value() -> impl Parser<char, EmbedFieldComponent, Error = Simple<char>> {
+    parse_field_string_field("#value:", EmbedFieldComponent::Value)
+}
+
+/// Parse an embed field's inline setting.
+pub fn parse_embed_field_inline() -> impl Parser<char, EmbedFieldComponent, Error = Simple<char>> {
+    parsers::boolean()
+        .delimited_by(just("#inline:"), just(','))
+        .map(EmbedFieldComponent::Inline)
 }
