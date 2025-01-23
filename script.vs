@@ -16,4 +16,7 @@
     #title: "This is a title",
     #description: "This is a description",
     #colour: #12345,
+    #image: "https://imageurl.png",
+		#thumbnail: "https://thumbnail.png",
+		#url: "https://embedurl.png",
 }

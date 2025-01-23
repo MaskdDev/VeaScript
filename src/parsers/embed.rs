@@ -27,57 +27,59 @@ pub fn parse_embed_component() -> impl Parser<char, EmbedComponent, Error = Simp
     // Create embed component parser
     let component_parser = parse_embed_title()
         .or(parse_embed_description())
-        .or(parse_embed_colour());
+        .or(parse_embed_colour())
+        .or(parse_embed_image())
+        .or(parse_embed_thumbnail())
+        .or(parse_embed_url());
 
     // Return embed component parser
     component_parser.padded()
 }
 
-/// Parse an embed title.
-pub fn parse_embed_title() -> impl Parser<char, EmbedComponent, Error = Simple<char>> {
-    let title_parser = parsers::string()
-        .delimited_by(just("#title:"), just(','))
-        .map(EmbedComponent::Title);
-
-    title_parser
+/// Parse a string field.
+pub fn parse_string_field(
+    tag: &'static str,
+    component: impl Fn(String) -> EmbedComponent,
+) -> impl Parser<char, EmbedComponent, Error = Simple<char>> {
+    // Return title parser
+    parsers::string()
+        .delimited_by(just(tag), just(','))
+        .map(component)
 }
 
-/// Parse an embed description
+/// Parse an embed title.
+pub fn parse_embed_title() -> impl Parser<char, EmbedComponent, Error = Simple<char>> {
+    parse_string_field("#title:", EmbedComponent::Title)
+}
+
+/// Parse an embed description.
 pub fn parse_embed_description() -> impl Parser<char, EmbedComponent, Error = Simple<char>> {
-    // Create parser to read a string
-    let string = just("\"")
-        .ignore_then(filter(|c| *c != '\\' && *c != '\"').repeated())
-        .then_ignore(just("\""))
-        .padded()
-        .collect::<String>();
+    parse_string_field("#description:", EmbedComponent::Description)
+}
 
-    let description_parser = string
-        .clone()
-        .delimited_by(just("#description:"), just(','))
-        .map(EmbedComponent::Description);
+/// Parse an embed image.
+pub fn parse_embed_image() -> impl Parser<char, EmbedComponent, Error = Simple<char>> {
+    parse_string_field("#image:", EmbedComponent::Image)
+}
 
-    description_parser
+/// Parse an embed thumbnail.
+pub fn parse_embed_thumbnail() -> impl Parser<char, EmbedComponent, Error = Simple<char>> {
+    parse_string_field("#thumbnail:", EmbedComponent::Thumbnail)
+}
+
+/// Parse an embed url.
+pub fn parse_embed_url() -> impl Parser<char, EmbedComponent, Error = Simple<char>> {
+    parse_string_field("#url:", EmbedComponent::Url)
 }
 
 /// Parse an embed colour
 pub fn parse_embed_colour() -> impl Parser<char, EmbedComponent, Error = Simple<char>> {
-    // Create parser to read a hexadecimal
-    let hex = just("0x")
-        .or(just("#"))
-        .ignore_then(text::int(16))
-        .map(|s: String| i32::from_str_radix(&s, 16).unwrap());
-
-    // Create parser to read an integer
-    let int = text::int(10).map(|s: String| s.parse().unwrap()).padded();
-
     // Create colour parser
-    let colour = hex.or(int).padded();
+    let colour = parsers::hex().or(parsers::int32()).padded();
 
-    let colour_parser = colour
-        .clone()
+    // Return colour field parser
+    colour
         .delimited_by(just("#colour:"), just(','))
         .padded()
-        .map(EmbedComponent::Colour);
-
-    colour_parser
+        .map(EmbedComponent::Colour)
 }

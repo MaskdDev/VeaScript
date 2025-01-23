@@ -1866,6 +1866,7 @@ dependencies = [
  "rand",
  "serde",
  "serenity",
+ "url",
 ]
 
 [[package]]

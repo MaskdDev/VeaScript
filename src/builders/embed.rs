@@ -1,5 +1,5 @@
 use crate::enums::EmbedComponent;
-use crate::helpers::hexadecimal;
+use crate::helpers::{hexadecimal, validation};
 use crate::structs::StoredEmbed;
 use chumsky::prelude::*;
 
@@ -70,6 +70,47 @@ pub fn build_embed(components: Vec<EmbedComponent>) -> Result<StoredEmbed, Strin
                 } else {
                     // Set embed colour
                     embed = embed.colour(colour);
+                }
+            }
+            EmbedComponent::Image(image_url) => {
+                // Check if the image url is valid.
+                validation::url(&image_url, "Image URL")?;
+
+                // Check if image has already been set
+                if embed.image_url.is_some() {
+                    // Return multiple image error
+                    return Err(String::from("You can only have one image for an embed."));
+                } else {
+                    // Set embed image
+                    embed = embed.image(image_url);
+                }
+            }
+            EmbedComponent::Thumbnail(thumbnail_url) => {
+                // Check if the thumbnail url is valid.
+                validation::url(&thumbnail_url, "Thumbnail URL")?;
+
+                // Check if image has already been set
+                if embed.thumbnail_url.is_some() {
+                    // Return multiple thumbnail error
+                    return Err(String::from(
+                        "You can only have one thumbnail for an embed.",
+                    ));
+                } else {
+                    // Set embed thumbnail
+                    embed = embed.thumbnail(thumbnail_url);
+                }
+            }
+            EmbedComponent::Url(embed_url) => {
+                // Check if the embed url is valid.
+                validation::url(&embed_url, "Embed URL")?;
+
+                // Check if url has already been set
+                if embed.url.is_some() {
+                    // Return multiple url error
+                    return Err(String::from("You can only have one url for an embed."));
+                } else {
+                    // Set embed url
+                    embed = embed.url(embed_url);
                 }
             }
         }
