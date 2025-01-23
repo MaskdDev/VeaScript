@@ -4,6 +4,6 @@ use chumsky::prelude::*;
 pub fn hexadecimal() -> impl Parser<char, i32, Error = Simple<char>> {
     just("0x")
         .or(just("#"))
-        .ignore_then(text::int(16))
+        .ignore_then(text::digits(16))
         .map(|s: String| i32::from_str_radix(&s, 16).unwrap())
 }
