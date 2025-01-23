@@ -1,12 +1,15 @@
 /// A VeaScript embed component.
 #[derive(Debug)]
 pub enum EmbedComponent {
+    Author(Vec<EmbedAuthorComponent>),
     Title(String),
     Description(String),
     Colour(i32),
     Image(String),
     Thumbnail(String),
     Url(String),
+    Footer(Vec<EmbedFooterComponent>),
+    Timestamp(i64),
 }
 
 /// A VeaScript embed author component.
@@ -21,7 +24,6 @@ pub enum EmbedAuthorComponent {
 #[derive(Debug)]
 pub enum EmbedFooterComponent {
     Text(String),
-    Timestamp(u64),
     IconUrl(String),
 }
 

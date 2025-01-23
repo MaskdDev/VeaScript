@@ -8,7 +8,7 @@ pub mod string;
 pub mod text;
 
 // Re-export parsers
-pub use decimal::int32;
+pub use decimal::{int32, int64};
 pub use embed::parse_embed as embed;
 pub use hexadecimal::hexadecimal as hex;
 pub use math::parse_math as math;
