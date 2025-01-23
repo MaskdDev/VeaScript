@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use serenity::all::{Colour, CreateEmbed, CreateEmbedAuthor, CreateEmbedFooter, Timestamp};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 /// A stored embed that can be used by the bot.
 pub struct StoredEmbed {
     /// The author for the embed.
@@ -180,7 +180,7 @@ impl StoredEmbed {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 /// A stored embed author that can be used by the bot.
 pub struct StoredEmbedAuthor {
     /// The embed author's name.
@@ -242,7 +242,7 @@ impl StoredEmbedAuthor {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 /// A stored embed footer that can be used by the bot.
 pub struct StoredEmbedFooter {
     /// The embed footer's text.
@@ -289,7 +289,7 @@ impl From<StoredEmbedFooter> for CreateEmbedFooter {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 /// A stored embed field that can be used by the bot.
 pub struct StoredEmbedField {
     /// The name of the field.
