@@ -1,29 +1,18 @@
+use crate::enums::{Expr, MathExpr};
 use chumsky::prelude::*;
 
-#[derive(Debug)]
-/// An enum representing a VeaScript math expression.
-pub enum MathExpr {
-    /// A standard 64-bit float.
-    Num(f64),
+/// Parse a string of math characters into a VeaScript math expression.
+pub fn parse_math() -> impl Parser<char, Expr, Error = Simple<char>> {
+    let math_parser = parse_math_raw()
+        .delimited_by(just("#math {"), just("}"))
+        .map(Expr::Math)
+        .labelled("math expression");
 
-    /// A negative operator to flip the sign of a number.
-    Neg(Box<Self>),
-
-    /// An addition operator, to add two expressions together.
-    Add(Box<Self>, Box<Self>),
-
-    /// A subtraction operator, to subtract one expression from another..
-    Sub(Box<Self>, Box<Self>),
-
-    /// A multiplication operator, to multiply two expressions together.
-    Mul(Box<Self>, Box<Self>),
-
-    /// A division operator, to divide two expressions.
-    Div(Box<Self>, Box<Self>),
+    math_parser.padded()
 }
 
 /// Parse a string of characters into a math expression.
-pub fn parse_math() -> impl Parser<char, MathExpr, Error = Simple<char>> {
+pub fn parse_math_raw() -> impl Parser<char, MathExpr, Error = Simple<char>> {
     // Create recursive parser
     recursive(|expr| {
         // Create parser to read in an unsigned integer
@@ -70,17 +59,4 @@ pub fn parse_math() -> impl Parser<char, MathExpr, Error = Simple<char>> {
         // Return sum parser.
         sum
     })
-}
-
-/// Evaluate a math expression.
-pub fn eval(expression: &MathExpr) -> f64 {
-    // Match expression type
-    match expression {
-        MathExpr::Num(x) => *x,
-        MathExpr::Neg(a) => -eval(a),
-        MathExpr::Add(a, b) => eval(a) + eval(b),
-        MathExpr::Sub(a, b) => eval(a) - eval(b),
-        MathExpr::Mul(a, b) => eval(a) * eval(b),
-        MathExpr::Div(a, b) => eval(a) / eval(b),
-    }
 }
