@@ -180,6 +180,43 @@ impl StoredEmbed {
     }
 }
 
+impl StoredEmbed {
+    /// Get the total number of characters in this embed.
+    pub fn total_chars(&self) -> usize {
+        // Initialise total chars
+        let mut total_chars: usize = 0;
+
+        // Add author name chars
+        if let Some(author) = self.author.as_ref() {
+            total_chars += author.name.chars().count();
+        }
+
+        // Add title chars
+        if let Some(title) = self.title.as_ref() {
+            total_chars += title.chars().count();
+        }
+
+        // Add description chars
+        if let Some(description) = self.description.as_ref() {
+            total_chars += description.chars().count();
+        }
+
+        // Add field chars
+        for field in &self.fields {
+            total_chars += field.name.chars().count();
+            total_chars += field.value.chars().count();
+        }
+
+        // Add footer text chars
+        if let Some(footer) = self.footer.as_ref() {
+            total_chars += footer.text.chars().count();
+        }
+
+        // Return total chars
+        total_chars
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 /// A stored embed author that can be used by the bot.
 pub struct StoredEmbedAuthor {

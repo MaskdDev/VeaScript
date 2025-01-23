@@ -154,8 +154,20 @@ pub fn build_embed(components: Vec<EmbedComponent>) -> Result<StoredEmbed, Strin
         }
     }
 
-    // Return embed
-    Ok(embed)
+    // Get the total number of characters in the embed.
+    let total_chars = embed.total_chars();
+
+    // Check if embed characters doesn't exceed 6000.
+    if total_chars > 6000 {
+        // Return total chars error
+        Err(format!(
+            "Your embed has {} characters in total. An embed cannot exceed 6000 total characters.",
+            total_chars
+        ))
+    } else {
+        // Return embed
+        Ok(embed)
+    }
 }
 
 // Build a stored embed author struct using a vector of VeaScript embed author components.
@@ -355,10 +367,10 @@ pub fn build_fields(
                         return Err(String::from(
                             "You can only have one field value per embed field.",
                         ));
-                    } else if value_length > 256 {
+                    } else if value_length > 1024 {
                         // Return length error
                         return Err(format!(
-                        "The length of one of your field values ({}) is above the maximum of 256 characters.",
+                        "The length of one of your field values ({}) is above the maximum of 1024 characters.",
                         value_length
                     ));
                     } else {
